@@ -35,6 +35,9 @@ public class ClientController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        rbA.setOnAction(e -> voteDTO.setOption("A"));
+        rbB.setOnAction(e -> voteDTO.setOption("B"));
+        rbC.setOnAction(e -> voteDTO.setOption("C"));
         connectToServer();
     }
 
@@ -86,5 +89,14 @@ public class ClientController implements Initializable {
     }
 
     public void submitVote(MouseEvent mouseEvent) {
+        try {
+            if (clientSocket != null && clientSocket.isConnected()) {
+                objectOS.writeObject(new VoteDTO(usernameTxt.getText(), voteDTO.getOption()));
+                objectOS.flush();
+                submitBtn.setDisable(true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

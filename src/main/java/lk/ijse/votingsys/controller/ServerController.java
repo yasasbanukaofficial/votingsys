@@ -10,7 +10,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ServerController {
     private final CopyOnWriteArrayList<ObjectOutputStream> clientOutputStreams = new CopyOnWriteArrayList<>();
-    private Socket clientSocket;
     private ObjectInputStream objectIS;
     private ObjectOutputStream objectOS;
     private VoteDTO voteDto = new VoteDTO();
@@ -21,17 +20,11 @@ public class ServerController {
             try (ServerSocket serverSocket = new ServerSocket(3000)){
                 System.out.println("Server Started");
                 System.out.println("Waiting for Client on port: 3000");
-
-                clientSocket = serverSocket.accept();
-
-                objectIS = new ObjectInputStream(clientSocket.getInputStream());
-                objectOS = new ObjectOutputStream(clientSocket.getOutputStream());
-
-                clientOutputStreams.add(objectOS);
-                System.out.println("Client Connected");
-
-                broadcastVotes();
-                handleClient(clientSocket);
+                while (isConnected) {
+                    Socket clientSocket = serverSocket.accept();
+                    System.out.println("Client Connected");
+                    new Thread(() -> handleClient(clientSocket)).start();
+                }
             } catch (Exception e) {
                 System.out.println("Client Disconnected");
                 e.printStackTrace();
@@ -41,11 +34,17 @@ public class ServerController {
 
     private void handleClient(Socket clientSocket) {
         new Thread(() -> {
-            try {
-                while (isConnected) {
-                    if (clientSocket != null && clientSocket.isConnected()) {
-                        this.voteDto = (VoteDTO) objectIS.readObject();
-                    }
+            try (
+                    ObjectInputStream objectIS = new ObjectInputStream(clientSocket.getInputStream());
+                    ObjectOutputStream objectOS = new ObjectOutputStream(clientSocket.getOutputStream())
+            ) {
+                clientOutputStreams.add(objectOS);
+                objectOS.writeObject(voteDto);
+                objectOS.flush();
+                while (true) {
+                    VoteDTO receivedDTO = (VoteDTO) objectIS.readObject();
+                    voteDto.addCount(receivedDTO.getOption());
+                    broadcastVotes();
                 }
             } catch (Exception e) {
                 isConnected = false;
