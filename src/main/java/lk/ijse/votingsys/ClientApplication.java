@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import lk.ijse.votingsys.controller.ClientController;
 
 import java.util.Objects;
 
@@ -19,5 +20,10 @@ public class ClientApplication extends Application {
         stage.setScene(clientScene);
         stage.setTitle("Client");
         stage.show();
+
+        stage.setOnCloseRequest(e -> {
+            ClientController clientController = new ClientController();
+            clientController.handleDisconnection();
+        });
     }
 }

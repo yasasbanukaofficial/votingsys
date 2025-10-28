@@ -31,22 +31,23 @@ public class ClientController implements Initializable {
     private ObjectInputStream objectIS;
     private ObjectOutputStream objectOS;
     private VoteDTO voteDTO = new VoteDTO();
+    private String selectedOption;
     private boolean isConnected = false;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         rbA.setOnAction(e -> {
-            voteDTO.setOption("A");
+            selectedOption = "A";
             rbB.setSelected(false);
             rbC.setSelected(false);
         });
         rbB.setOnAction(e -> {
-            voteDTO.setOption("B");
+            selectedOption = "B";
             rbA.setSelected(false);
             rbC.setSelected(false);
         });
         rbC.setOnAction(e -> {
-            voteDTO.setOption("C");
+            selectedOption = "C";
             rbA.setSelected(false);
             rbB.setSelected(false);
         });
@@ -85,25 +86,23 @@ public class ClientController implements Initializable {
     }
 
     private void handleMessages(Socket clientSocket) {
-        new Thread(() -> {
-            try {
-                while (isConnected && clientSocket.isConnected()) {
-                    VoteDTO receivedDTO = (VoteDTO) objectIS.readObject();
-                    if (voteDTO != null) {
-                        this.voteDTO = receivedDTO;
-                        displayCount();
-                    }
+        try {
+            while (isConnected && clientSocket.isConnected()) {
+                VoteDTO receivedDTO = (VoteDTO) objectIS.readObject();
+                if (voteDTO != null) {
+                    this.voteDTO = receivedDTO;
+                    displayCount();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        }).start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void submitVote(MouseEvent mouseEvent) {
         try {
             if (clientSocket != null && clientSocket.isConnected()) {
-                objectOS.writeObject(new VoteDTO(usernameTxt.getText(), voteDTO.getOption()));
+                objectOS.writeObject(new VoteDTO(usernameTxt.getText(), selectedOption));
                 objectOS.flush();
 
                 rbA.setDisable(true);
@@ -115,4 +114,25 @@ public class ClientController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    public void handleDisconnection() {
+        try {
+            isConnected = false;
+            if (objectIS != null) {
+                objectIS.close();
+            }
+            if (objectOS != null) {
+                objectOS.close();
+            }
+            if (clientSocket != null && !clientSocket.isClosed()) {
+                clientSocket.close();
+            }
+            objectIS = null;
+            objectOS = null;
+            clientSocket = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
