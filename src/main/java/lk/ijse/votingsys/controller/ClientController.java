@@ -35,9 +35,21 @@ public class ClientController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        rbA.setOnAction(e -> voteDTO.setOption("A"));
-        rbB.setOnAction(e -> voteDTO.setOption("B"));
-        rbC.setOnAction(e -> voteDTO.setOption("C"));
+        rbA.setOnAction(e -> {
+            voteDTO.setOption("A");
+            rbB.setSelected(false);
+            rbC.setSelected(false);
+        });
+        rbB.setOnAction(e -> {
+            voteDTO.setOption("B");
+            rbA.setSelected(false);
+            rbC.setSelected(false);
+        });
+        rbC.setOnAction(e -> {
+            voteDTO.setOption("C");
+            rbA.setSelected(false);
+            rbB.setSelected(false);
+        });
         connectToServer();
     }
 
