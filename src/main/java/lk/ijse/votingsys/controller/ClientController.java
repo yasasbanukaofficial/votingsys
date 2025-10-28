@@ -76,9 +76,9 @@ public class ClientController implements Initializable {
     private void displayCount() {
         Platform.runLater(() -> {
             ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList(
-                    new PieChart.Data("Option A", voteDTO.getOptionACount()),
-                    new PieChart.Data("Option B", voteDTO.getOptionBCount()),
-                    new PieChart.Data("Option C", voteDTO.getOptionCCount())
+                    new PieChart.Data("Option A - " + voteDTO.getOptionACount(), voteDTO.getOptionACount()),
+                    new PieChart.Data("Option B - " + voteDTO.getOptionBCount(), voteDTO.getOptionBCount()),
+                    new PieChart.Data("Option C - " + voteDTO.getOptionCCount(), voteDTO.getOptionCCount())
             );
             voteChart.setData(pieChartData);
         });
@@ -105,6 +105,10 @@ public class ClientController implements Initializable {
             if (clientSocket != null && clientSocket.isConnected()) {
                 objectOS.writeObject(new VoteDTO(usernameTxt.getText(), voteDTO.getOption()));
                 objectOS.flush();
+
+                rbA.setDisable(true);
+                rbB.setDisable(true);
+                rbC.setDisable(true);
                 submitBtn.setDisable(true);
             }
         } catch (Exception e) {
