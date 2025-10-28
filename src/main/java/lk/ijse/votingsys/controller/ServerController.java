@@ -22,7 +22,14 @@ public class ServerController {
                 System.out.println("Waiting for Client on port: 3000");
                 while (isConnected) {
                     Socket clientSocket = serverSocket.accept();
+                    objectOS = new ObjectOutputStream(clientSocket.getOutputStream());
+                    objectIS = new ObjectInputStream(clientSocket.getInputStream());
                     System.out.println("Client Connected");
+
+                    clientOutputStreams.add(objectOS);
+                    objectOS.writeObject(voteDto);
+                    objectOS.flush();
+
                     new Thread(() -> handleClient(clientSocket)).start();
                 }
             } catch (Exception e) {
@@ -34,20 +41,13 @@ public class ServerController {
 
     private void handleClient(Socket clientSocket) {
         new Thread(() -> {
-            try (
-                    ObjectInputStream objectIS = new ObjectInputStream(clientSocket.getInputStream());
-                    ObjectOutputStream objectOS = new ObjectOutputStream(clientSocket.getOutputStream())
-            ) {
-                clientOutputStreams.add(objectOS);
-                objectOS.writeObject(voteDto);
-                objectOS.flush();
-                while (true) {
+            try {
+                while (!clientSocket.isClosed()) {
                     VoteDTO receivedDTO = (VoteDTO) objectIS.readObject();
                     voteDto.addCount(receivedDTO.getOption());
                     broadcastVotes();
                 }
             } catch (Exception e) {
-                isConnected = false;
                 e.printStackTrace();
             }
         }).start();
