@@ -10,15 +10,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ServerController {
     private final CopyOnWriteArrayList<ObjectOutputStream> clientOutputStreams = new CopyOnWriteArrayList<>();
-    private VoteDTO voteDto = new VoteDTO();
-    private boolean isConnected = true;
+    private final VoteDTO voteDto = new VoteDTO();
 
     public void startConnection() {
         new Thread(() -> {
             try (ServerSocket serverSocket = new ServerSocket(3000)){
                 System.out.println("Server Started");
                 System.out.println("Waiting for Client on port: 3000");
-                while (isConnected) {
+                while (true) {
                     Socket clientSocket = serverSocket.accept();
                     ObjectOutputStream objectOS = new ObjectOutputStream(clientSocket.getOutputStream());
                     ObjectInputStream objectIS = new ObjectInputStream(clientSocket.getInputStream());
