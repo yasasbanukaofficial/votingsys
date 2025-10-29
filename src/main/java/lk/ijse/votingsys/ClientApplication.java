@@ -20,10 +20,5 @@ public class ClientApplication extends Application {
         stage.setScene(clientScene);
         stage.setTitle("Client");
         stage.show();
-
-        stage.setOnCloseRequest(e -> {
-            ClientController clientController = new ClientController();
-            clientController.handleDisconnection();
-        });
     }
 }

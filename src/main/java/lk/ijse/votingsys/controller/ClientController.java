@@ -10,11 +10,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 import lk.ijse.votingsys.dto.VoteDTO;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -52,6 +54,12 @@ public class ClientController implements Initializable {
             rbB.setSelected(false);
         });
         connectToServer();
+        Platform.runLater(() -> {
+            Stage stage = (Stage) statuslbl.getScene().getWindow();
+            stage.setOnCloseRequest(e -> {
+                handleDisconnection();
+            });
+        });
     }
 
     private void connectToServer() {
@@ -94,6 +102,8 @@ public class ClientController implements Initializable {
                     displayCount();
                 }
             }
+        } catch (SocketException se) {
+            System.out.println("Client disconnected");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -127,9 +137,8 @@ public class ClientController implements Initializable {
             if (clientSocket != null && !clientSocket.isClosed()) {
                 clientSocket.close();
             }
-            objectIS = null;
-            objectOS = null;
-            clientSocket = null;
+            Platform.exit();
+            System.exit(0);
         } catch (Exception e) {
             e.printStackTrace();
         }
